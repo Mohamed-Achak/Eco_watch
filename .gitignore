@@ -1,0 +1,26 @@
+node_modules/
+
+# Local runtime database files
+backend/db/*.db
+backend/db/*.db-shm
+backend/db/*.db-wal
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Accidental scaffold artifact
+{backend/

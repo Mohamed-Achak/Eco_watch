@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoWatch — Wildlife &amp; Fire Monitoring · Ifrane</title>
+  <meta name="description" content="Real-time wildlife activity and forest fire monitoring platform for Ifrane, Morocco">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Leaflet (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- ── LOADING OVERLAY ──────────────────────────────────────── -->
+<div id="loadingOverlay">
+  <div class="loading-logo">Eco<span>Watch</span></div>
+  <div class="spinner"></div>
+  <div style="font-size:0.8rem;color:var(--text-dim);font-family:var(--font-mono)">Connecting to backend…</div>
+</div>
+
+<!-- ── TOPBAR ──────────────────────────────────────────────── -->
+<header class="topbar">
+  <a href="#" class="logo">
+    <div class="logo-mark">🌿</div>
+    <span class="logo-text">Eco<span>Watch</span></span>
+  </a>
+
+  <nav class="top-nav">
+    <button class="top-nav-btn active" data-view="map"       onclick="App.switchView('map')">🗺 Live Map</button>
+    <button class="top-nav-btn"        data-view="dashboard" onclick="App.switchView('dashboard')">📊 Dashboard</button>
+  </nav>
+
+  <div class="top-right">
+    <button class="role-toggle civilian" id="roleToggle" onclick="App.toggleRole()">
+      <span class="role-dot civilian"></span>👤 Civilian
+    </button>
+    <button class="icon-btn" onclick="App.showNearby()" title="Nearby reports (5km)">📍</button>
+    <button class="icon-btn" id="alertBtn" onclick="App.switchView('dashboard')" title="Alerts">
+      🔔
+      <span class="badge" id="alertBadge" style="display:none">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- ── APP BODY ─────────────────────────────────────────────── -->
+<main class="app-body">
+
+  <!-- ── MAP VIEW ─────────────────────────────────────────────── -->
+  <div class="view active" id="mapViewEl">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-hd">
+        <div class="sidebar-hd-title">Reports</div>
+        <div class="filters">
+          <button class="fchip on-all" onclick="App.setTypeFilter('all', this)">All</button>
+          <button class="fchip"        onclick="App.setTypeFilter('fire', this)">🔥 Fire</button>
+          <button class="fchip"        onclick="App.setTypeFilter('wildlife', this)">🦌 Wildlife</button>
+        </div>
+        <div class="time-chips">
+          <button class="tchip on" onclick="App.setTimeFilter('24h', this)">24h</button>
+          <button class="tchip"    onclick="App.setTimeFilter('7d', this)">7 days</button>
+          <button class="tchip"    onclick="App.setTimeFilter('all', this)">All time</button>
+        </div>
+      </div>
+      <div class="report-list" id="reportList">
+        <div class="empty"><div class="ei"><span class="spinner"></span></div><p>Loading reports…</p></div>
+      </div>
+      <!-- Connection status -->
+      <div class="conn-bar">
+        <span class="conn-dot ok" id="connDot"></span>
+        <span id="connText">Connecting…</span>
+      </div>
+    </aside>
+
+    <!-- Map -->
+    <div class="map-wrap">
+      <div id="map"></div>
+
+      <!-- Stat pills -->
+      <div class="map-stats-bar">
+        <div class="stat-pill">
+          <span class="sdot fire"></span>
+          <span class="snum" id="fireCount">—</span>
+          <span style="color:var(--text-muted);font-size:0.77rem">Fire</span>
+        </div>
+        <div class="stat-pill">
+          <span class="sdot wild"></span>
+          <span class="snum" id="wildCount">—</span>
+          <span style="color:var(--text-muted);font-size:0.77rem">Wildlife</span>
+        </div>
+      </div>
+
+      <!-- Alert strip -->
+      <div class="alert-strip" id="alertStrip">
+        <div class="alert-card">
+          <div class="alert-title">⚠ HIGH SEVERITY FIRE</div>
+          <div class="alert-body" id="alertText">Active incident detected</div>
+        </div>
+      </div>
+
+      <!-- FAB buttons -->
+      <div class="map-fabs">
+        <button class="fab wildlife" onclick="App.openReportPanel('wildlife')">🦌 Report Wildlife</button>
+        <button class="fab fire"     onclick="App.openReportPanel('fire')">🔥 Report Fire</button>
+        <button class="fab" id="addLabelBtn"
+                style="display:none;background:rgba(96,165,250,0.85);color:#fff"
+                onclick="App.openLabelPanel()">📍 Add Label</button>
+      </div>
+
+      <!-- Map controls -->
+      <div class="map-ctrls">
+        <button class="mctrl" id="pinPlacementBtn" onclick="alert('Button works! Current mode: ' + (EcoMap ? EcoMap.getPinPlacementMode() : 'EcoMap not loaded')); console.log('Button clicked, current mode:', EcoMap.getPinPlacementMode()); EcoMap.setPinPlacementMode(!EcoMap.getPinPlacementMode())" title="Place pin for report">📍</button>
+        <button class="mctrl" onclick="App.getLocation()" title="My location">◎</button>
+        <button class="mctrl" onclick="App.showNearby()" title="5km nearby">⊙</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD VIEW ───────────────────────────────────────── -->
+  <div class="view" id="dashViewEl">
+    <div class="dash-view">
+
+      <div class="dash-hd">
+        <div class="dash-title">Authority Dashboard</div>
+        <div class="dash-sub">Monitor, validate and manage all incident reports across Ifrane</div>
+      </div>
+
+      <div class="dash-kpis" id="dashKPIs">
+        <!-- filled by app.js -->
+      </div>
+
+      <div class="dash-toolbar">
+        <div class="dash-toolbar-title">All Reports</div>
+        <select class="dash-select" onchange="App.setDashFilter(this.value)">
+          <option value="all">All Types</option>
+          <option value="fire">🔥 Fire</option>
+          <option value="wildlife">🦌 Wildlife</option>
+        </select>
+        <select class="dash-select" onchange="App.setDashStatusFilter(this.value)">
+          <option value="all">All Status</option>
+          <option value="new">New</option>
+          <option value="verified">Verified</option>
+          <option value="resolved">Resolved</option>
+          <option value="false">False</option>
+        </select>
+      </div>
+
+      <div class="dash-body">
+        <div class="dash-table-wrap">
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Location</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dashTableBody">
+                <tr><td colspan="8" class="empty"><div class="ei"><span class="spinner"></span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ── SLIDE PANEL ─────────────────────────────────────────── -->
+<div class="backdrop" id="backdrop" onclick="App.closePanel()"></div>
+<aside class="panel" id="sidePanel">
+
+  <div class="panel-hd">
+    <div class="panel-title" id="panelTitle">Submit Report</div>
+    <button class="panel-close" onclick="App.closePanel()">✕</button>
+  </div>
+
+  <div class="panel-body">
+
+    <!-- REPORT PANEL BODY -->
+    <div id="reportPanelBody">
+
+      <!-- Type selector -->
+      <div class="type-grid">
+        <div class="type-card sel-wild" id="typeWild" onclick="App.selectType('wildlife')">
+          <div class="tc-icon">🦌</div>
+          <div class="tc-label">Wildlife Sighting</div>
+        </div>
+        <div class="type-card" id="typeFire" onclick="App.selectType('fire')">
+          <div class="tc-icon">🔥</div>
+          <div class="tc-label">Fire Incident</div>
+        </div>
+      </div>
+
+      <!-- GPS Location -->
+      <div class="form-group">
+        <label class="flabel">GPS Location</label>
+        <div class="field-row">
+          <input class="finput" id="locInput" placeholder="Tap Auto-detect →" readonly>
+          <button class="gps-btn" onclick="App.getLocation()">📍 Detect</button>
+        </div>
+      </div>
+
+      <!-- Species (wildlife) -->
+      <div class="form-group" id="speciesRow">
+        <label class="flabel">Species (optional)</label>
+        <select class="fselect" id="speciesInput">
+          <option value="">— Select species —</option>
+          <option>Barbary Macaque</option>
+          <option>Barbary Deer</option>
+          <option>Golden Eagle</option>
+          <option>Wild Boar</option>
+          <option>Red Fox</option>
+          <option>North African Porcupine</option>
+          <option>Common Genet</option>
+          <option>Egyptian Mongoose</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Severity (fire) -->
+      <div class="form-group" id="severityRow" style="display:none">
+        <label class="flabel">Severity Level</label>
+        <div class="sev-row">
+          <button class="sev-btn" onclick="App.setSeverity('low', this)">🟢 Low</button>
+          <button class="sev-btn" onclick="App.setSeverity('medium', this)">🟡 Medium</button>
+          <button class="sev-btn" onclick="App.setSeverity('high', this)">🔴 High</button>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="flabel">Description</label>
+        <textarea class="ftextarea" id="descInput" placeholder="Describe what you observed — location details, behavior, conditions…"></textarea>
+      </div>
+
+      <!-- Photo -->
+      <div class="form-group">
+        <label class="flabel">Photo (optional)</label>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon" id="uploadIcon">📷</div>
+          <div id="uploadText">Tap to upload photo</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none"
+               onchange="App.handleImageUpload(this.files[0])">
+      </div>
+
+      <button class="submit-btn wild" id="submitReportBtn" onclick="App.submitReport()">
+        🦌 Submit Wildlife Report
+      </button>
+    </div>
+
+    <!-- LABEL PANEL BODY -->
+    <div id="labelPanelBody" style="display:none">
+
+      <div class="form-group">
+        <label class="flabel">Label Name</label>
+        <input class="finput" id="labelName" placeholder="e.g. Cedar Forest South">
+      </div>
+
+      <div class="form-group">
+        <label class="flabel">Category</label>
+        <div class="label-category-grid">
+          <button class="lcat-btn" onclick="App.setLabelCategory('city', this)">🏙 City</button>
+          <button class="lcat-btn" onclick="App.setLabelCategory('forest', this)">🌲 Forest</button>
+          <button class="lcat-btn" onclick="App.setLabelCategory('lake', this)">💧 Lake/River</button>
+          <button class="lcat-btn" onclick="App.setLabelCategory('road', this)">🛣 Road</button>
+          <button class="lcat-btn" onclick="App.setLabelCategory('landmark', this)">📌 Landmark</button>
+          <button class="lcat-btn" onclick="App.setLabelCategory('zone', this)">🚫 Zone</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="flabel">Location</label>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px;font-size:0.8rem;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:6px" id="labelCoordDisplay">
+          — click map to pick location —
+        </div>
+        <button class="gps-btn" style="width:100%;justify-content:center" onclick="App.pickLabelLocation()">
+          🗺 Click on map to pick
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="flabel">Description (optional)</label>
+        <textarea class="ftextarea" id="labelDesc" placeholder="Short description of this location…" style="min-height:60px"></textarea>
+      </div>
+
+      <button class="submit-btn wild" onclick="App.submitLabel()">📍 Add Map Label</button>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ── TOAST ───────────────────────────────────────────────── -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────── -->
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

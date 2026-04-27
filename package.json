@@ -1,0 +1,25 @@
+{
+  "name": "ecowatch-backend",
+  "version": "1.0.0",
+  "description": "EcoWatch Wildlife & Fire Monitoring System — Backend API",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "db:reset": "rm -f backend/db/ecowatch.db && node -e \"require('./backend/db/database').initDb()\"",
+    "db:seed": "node backend/db/database.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "EcoWatch Team — Ifrane, Morocco",
+  "license": "MIT"
+}
