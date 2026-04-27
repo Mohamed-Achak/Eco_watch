@@ -92,17 +92,5 @@ INSERT OR IGNORE INTO map_labels (name, category, latitude, longitude, descripti
     ('Oued Tizguit',             'lake',     33.5150, -5.1200, 'River running south of Ifrane',                '🌊'),
     ('Camping Les Cèdres',       'landmark', 33.4950, -5.1500, 'Popular forest campsite',                      '⛺');
 
--- ─── SEED: REPORTS ────────────────────────────────────────────
-INSERT OR IGNORE INTO reports (report_code, type, description, latitude, longitude, severity, species, status, reporter_id) VALUES
-    ('RPT-0001','fire',     'Smoke visible rising from cedar forest near Gouraud',   33.5420,-5.0980,'high',   NULL,          'verified', 1),
-    ('RPT-0002','wildlife', 'Barbary Macaque troop spotted near picnic area',         33.5290,-5.1120, NULL,    'Barbary Macaque','new',   1),
-    ('RPT-0003','wildlife', 'Barbary Deer family sighted near Lac Ifrane',            33.5270,-5.1050, NULL,    'Barbary Deer', 'verified',1),
-    ('RPT-0004','fire',     'Small brush fire on south hiking trail',                 33.5180,-5.1200,'medium', NULL,          'resolved', 1),
-    ('RPT-0005','wildlife', 'Golden Eagle nest spotted near Jbel Hebri',              33.5450,-5.0850, NULL,    'Golden Eagle', 'new',    1),
-    ('RPT-0006','fire',     'Campfire left unattended by hikers near N8',             33.5350,-5.0760,'low',    NULL,          'false',    1),
-    ('RPT-0007','wildlife', 'Wild Boar family crossing the mountain road',            33.5310,-5.1300, NULL,    'Wild Boar',   'new',     1),
-    ('RPT-0008','fire',     'Fire indicators near Zone Rouge Forêt Nord',             33.5580,-5.0920,'high',   NULL,          'verified', 1);
-
-INSERT OR IGNORE INTO alerts (report_id, message) VALUES
-    (1, 'HIGH SEVERITY fire reported near cedar forest. Immediate response required.'),
-    (8, 'HIGH SEVERITY fire indicators near northern forest zone. Units dispatched.');
+-- Reports and alerts intentionally start empty.
+-- New incident data is created only when users submit reports.

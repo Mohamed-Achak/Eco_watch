@@ -68,16 +68,7 @@ async function _fetch(path, options = {}) {
 }
 
 // In-memory demo fallback when backend is not running
-const DEMO_REPORTS = [
-  { id:1, report_code:'RPT-0001', type:'fire',     description:'Smoke visible rising from cedar forest', latitude:33.5420, longitude:-5.0980, severity:'high',   species:null,             status:'verified', created_at: new Date(Date.now()-3600000).toISOString(), reporter_name:'Civilian' },
-  { id:2, report_code:'RPT-0002', type:'wildlife', description:'Barbary Macaque troop near picnic area',  latitude:33.5290, longitude:-5.1120, severity:null,     species:'Barbary Macaque', status:'new',      created_at: new Date(Date.now()-7200000).toISOString(), reporter_name:'Civilian' },
-  { id:3, report_code:'RPT-0003', type:'wildlife', description:'Barbary Deer sighted near Lac Ifrane',    latitude:33.5270, longitude:-5.1050, severity:null,     species:'Barbary Deer',    status:'verified', created_at: new Date(Date.now()-10800000).toISOString(), reporter_name:'Civilian' },
-  { id:4, report_code:'RPT-0004', type:'fire',     description:'Small brush fire on south hiking trail',  latitude:33.5180, longitude:-5.1200, severity:'medium', species:null,             status:'resolved', created_at: new Date(Date.now()-86400000).toISOString(), reporter_name:'Civilian' },
-  { id:5, report_code:'RPT-0005', type:'wildlife', description:'Golden Eagle nest spotted near Jbel Hebri',latitude:33.5450, longitude:-5.0850, severity:null,    species:'Golden Eagle',    status:'new',      created_at: new Date(Date.now()-1800000).toISOString(), reporter_name:'Civilian' },
-  { id:6, report_code:'RPT-0006', type:'fire',     description:'Campfire left unattended by hikers',       latitude:33.5350, longitude:-5.0760, severity:'low',   species:null,             status:'false',    created_at: new Date(Date.now()-43200000).toISOString(), reporter_name:'Civilian' },
-  { id:7, report_code:'RPT-0007', type:'wildlife', description:'Wild Boar family crossing mountain road',  latitude:33.5310, longitude:-5.1300, severity:null,    species:'Wild Boar',       status:'new',      created_at: new Date(Date.now()-900000).toISOString(), reporter_name:'Civilian' },
-  { id:8, report_code:'RPT-0008', type:'fire',     description:'Fire indicators near northern forest zone',latitude:33.5580, longitude:-5.0920, severity:'high',  species:null,             status:'verified', created_at: new Date(Date.now()-5400000).toISOString(), reporter_name:'Civilian' },
-];
+const DEMO_REPORTS = [];
 
 const DEMO_LABELS = [
   { id:1,  name:'Ifrane City Centre',     category:'city',     latitude:33.5333, longitude:-5.1067, icon:'🏙', description:'Main urban area' },
@@ -94,7 +85,7 @@ const DEMO_LABELS = [
   { id:12, name:'Camping Les Cèdres',     category:'landmark', latitude:33.4950, longitude:-5.1500, icon:'⛺', description:'Forest campsite' },
 ];
 
-let _nextDemoId = 9;
+let _nextDemoId = 1;
 let _demoReports = [...DEMO_REPORTS];
 let _demoLabels  = [...DEMO_LABELS];
 

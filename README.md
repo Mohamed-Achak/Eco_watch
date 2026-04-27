@@ -69,7 +69,8 @@ http://localhost:3000
 
 The server:
 - Initialises the SQLite database automatically on first run
-- Seeds it with Ifrane map labels and sample reports
+- Seeds demo users and Ifrane map labels
+- Starts reports and alerts empty until users submit incidents
 - Serves the frontend from `/frontend`
 
 ---
